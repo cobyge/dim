@@ -7,10 +7,15 @@ env:
   DATABASE_URL: "sqlite://./dim_dev.db"
 
 jobs:
-  prepare:
-    name: Prepare
+  build_linux:
+    name: Build Linux
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y libva-dev libva-drm2 libva2 sqlite3
+      - uses: actions/checkout@v2
+
       - name: Download UI artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
@@ -20,15 +25,6 @@ jobs:
           name: webui
           path: ui/build
           repo: ${{github.repository}}
-
-  build_linux:
-    name: Build Linux
-    needs: prepare
-    runs-on: ubuntu-latest
-    steps:
-      - run: sudo apt-get update
-      - run: sudo apt-get install -y libva-dev libva-drm2 libva2 sqlite3
-      - uses: actions/checkout@v2
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -95,6 +91,16 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install -y sqlite3
       - uses: actions/checkout@v2
+
+      - name: Download UI artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: react.yml
+          workflow_conclusion: success
+          branch: feature/add-windows-ci
+          name: webui
+          path: ui/build
+          repo: ${{github.repository}}
 
       - uses: actions-rs/toolchain@v1
         with:
