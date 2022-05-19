@@ -7,14 +7,10 @@ env:
   DATABASE_URL: "sqlite://./dim_dev.db"
 
 jobs:
-  build:
-    name: Build
+  prepare:
+    name: Prepare
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt-get update
-      - run: sudo apt-get install -y libva-dev libva-drm2 libva2 sqlite3
-      - uses: actions/checkout@v2
-
       - name: Download UI artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
@@ -24,6 +20,15 @@ jobs:
           name: webui
           path: ui/build
           repo: ${{github.repository}}
+
+  build_linux:
+    name: Build Linux
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y libva-dev libva-drm2 libva2 sqlite3
+      - uses: actions/checkout@v2
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -73,11 +78,70 @@ jobs:
           chmod +x release/dim
 
       - name: Compress release dir
-        run: tar -zcvf release.tar.gz release
+        run: |
+          tar -zcvf release_linux64.tar.gz release
 
       - name: Save artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: release
-          path: release.tar.gz
+          name: release_linux64
+          path: release_linux64.tar.gz
 
+  build_windows:
+    name: Build Windows
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y sqlite3
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: cargo
+
+      - name: Download ffmpeg+ffprobe artifacts
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          repo: "BtbN/FFmpeg-Builds"
+          version: "tags/latest"
+          file: "ffmpeg-n5.0-latest-win64-lgpl-5.0.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Unpack ffmpeg
+        run: |
+          unzip -j ffmpeg-n5.0-latest-win64-gpl-5.0.zip ffmpeg-n5.0-latest-win64-gpl-5.0/bin/ffprobe.exe ffmpeg-n5.0-latest-win64-gpl-5.0/bin/ffmpeg.exe
+
+      - name: Create release dir
+        run: |
+          mkdir -p release/utils
+          cp ffmpeg.exe release/utils/ffmpeg.exe
+          cp ffprobe.exe release/utils/ffprobe.exe
+
+      - name: Test Dim
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --tests
+
+      - name: Build Dim
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --verbose --release --target=x86_64-pc-windows-gnu
+
+      - name: Copy dim binaries
+        run: cp target/release/dim.exe release/dim.exe
+
+      - name: Compress release dir
+        run: tar -zcvf release_win64.tar.gz release
+
+      - name: Save artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: release_win64
+          path: release_win64.tar.gz
