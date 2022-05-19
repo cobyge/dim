@@ -108,7 +108,7 @@ jobs:
         with:
           repo: "BtbN/FFmpeg-Builds"
           version: "tags/latest"
-          file: "ffmpeg-n5.0-latest-win64-lgpl-5.0.zip"
+          file: "ffmpeg-n5.0-latest-win64-gpl-5.0.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Unpack ffmpeg
