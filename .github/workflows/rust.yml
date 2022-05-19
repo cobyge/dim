@@ -9,7 +9,6 @@ env:
 jobs:
   build_linux:
     name: Build Linux
-    needs: prepare
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get update
@@ -85,7 +84,6 @@ jobs:
 
   build_windows:
     name: Build Windows
-    needs: prepare
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get update
