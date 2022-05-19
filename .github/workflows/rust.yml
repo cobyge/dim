@@ -16,7 +16,7 @@ jobs:
         with:
           workflow: react.yml
           workflow_conclusion: success
-          branch: master
+          branch: feature/add-windows-ci
           name: webui
           path: ui/build
           repo: ${{github.repository}}
