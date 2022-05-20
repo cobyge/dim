@@ -139,7 +139,7 @@ jobs:
           args: --verbose --release --target=x86_64-pc-windows-gnu
 
       - name: Copy dim binaries
-        run: cp target/release/dim.exe release/dim.exe
+        run: cp target/x86_64-pc-windows-gnu/release/dim.exe release/dim.exe
 
       - name: Compress release dir
         run: tar -zcvf release_win64.tar.gz release
