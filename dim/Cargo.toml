@@ -62,7 +62,6 @@ tracing-tree = "0.2.0"
 thiserror = "1.0.30"
 displaydoc = "0.2.3"
 fuzzy-matcher = "0.3.7"
-parking_lot = "0.12.0"
 dashmap = "5.3.3"
 
 [build-dependencies]
